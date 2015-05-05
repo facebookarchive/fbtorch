@@ -7,7 +7,6 @@
 #include <dlfcn.h>
 
 #include <glog/logging.h>
-#include <mkl.h>
 
 #include "Exceptions.h"
 
