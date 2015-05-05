@@ -31,7 +31,7 @@ end
 sys.toc = toc
 
 -- Load C extension which loads torch and sets up error handlers
-local torch = require('fbtorch_ext')
+local torch = require('libfbtorch')
 
 if LuaUnit then
     -- modify torch.Tester to use our own flavor of LuaUnit

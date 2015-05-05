@@ -24,7 +24,7 @@ extern "C" int print_debug_traceback(lua_State* L) {
   return 0;
 }
 
-extern "C" int LUAOPEN(lua_State* L) {
+extern "C" int luaopen_libfbtorch(lua_State* L) {
   // Ensure that torch is loaded, so it doesn't reset the TH error handler
   lua_getglobal(L, "require");
   lua_pushstring(L, "torch");
