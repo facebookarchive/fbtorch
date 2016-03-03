@@ -6,6 +6,7 @@ io.stdout:setvbuf('line')
 
 local pl = require('pl.import_into')()
 local util = require('fb.util')
+require 'totem'
 
 -- Compatibility stuff, LuaJIT in 5.2 compat mode has renamed string.gfind
 -- to string.gmatch
@@ -33,8 +34,19 @@ sys.toc = toc
 -- Load C extension which loads torch and sets up error handlers
 local torch = require('fbtorch_ext')
 
+-- OMP tends to badly hurt performance on our multi-die multi-core NUMA
+-- machines, so it's off by default.  Turn it on with extreme care, and
+-- benchmark, benchmark, benchmark -- check "user time", not just "wall
+-- time", since you might be inadvertently wasting a ton of CPU for a
+-- negligible wall-clock speedup. For context, read this thread:
+-- https://fb.facebook.com/groups/709562465759038/874071175974832
+local env_threads = os.getenv('OMP_NUM_THREADS')
+if env_threads == nil or env_threads == '' then
+   torch.setnumthreads(1)
+end
+
 if LuaUnit then
-    -- modify torch.Tester to use our own flavor of LuaUnit
+    -- modify torch.Tester and totem.Tester to use our own flavor of LuaUnit
 
     torch.Tester.assert_sub = function(self, condition, message)
         if not condition then
@@ -72,7 +84,33 @@ if LuaUnit then
         end
 
         -- LuaUnit will run tests (functions whose names start with 'test')
-        -- from all globals whose names start with 'test'
+        -- from all globals whose names start with 'Test'
+        LuaUnit:run()
+    end
+
+    totem.Tester._assert_sub = torch.Tester.assert_sub
+    totem.Tester._success = function() end
+    totem.Tester._failure = function() end
+
+    totem.Tester.run = function(self, run_tests)
+        local tests = self.tests
+        if type(run_tests) == 'string' then
+            run_tests = {run_tests}
+        end
+        if type(run_tests) == 'table' then
+            tests = {}
+            for j, name in ipairs(run_tests) do
+                if self.tests[name] then
+                    tests[name] = self.tests[name]
+                end
+            end
+        end
+
+        -- global
+        TestTotem = tests
+
+        -- LuaUnit will run tests (functions whose names start with 'test')
+        -- from all globals whose names start with 'Test'
         LuaUnit:run()
     end
 end

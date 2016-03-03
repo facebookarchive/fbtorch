@@ -16,7 +16,6 @@ LINK_DIRECTORIES("${Torch_INSTALL_LIB}")
 ########################################################
 FILE(GLOB luasrc fbtorch.lua)
 SET(src
-  Exceptions.cpp
   FBTorch.cpp
   )
 
@@ -24,7 +23,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 ADD_LIBRARY(fbtorch_ext MODULE ${src})
 
-set_target_properties(fbtorch_ext 
+set_target_properties(fbtorch_ext
                       PROPERTIES PREFIX "")
 
 INSTALL(TARGETS fbtorch_ext
@@ -37,4 +36,3 @@ INSTALL(
   DESTINATION "${Torch_INSTALL_LUA_PATH_SUBDIR}")
 
 TARGET_LINK_LIBRARIES(fbtorch_ext folly)
-

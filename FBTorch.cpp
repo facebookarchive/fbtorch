@@ -8,6 +8,12 @@
 
 #include <glog/logging.h>
 
+#ifdef FB_INTERNAL
+#include <mkl.h>
+#else
+#define LUAOPEN(x) luaopen_fbtorch_ext(x)
+#endif
+
 #include "Exceptions.h"
 
 using namespace facebook::deeplearning::torch;
@@ -24,15 +30,12 @@ extern "C" int print_debug_traceback(lua_State* L) {
   return 0;
 }
 
-extern "C" int luaopen_fbtorch_ext(lua_State* L) {
+extern "C" int LUAOPEN(lua_State* L) {
   // Ensure that torch is loaded, so it doesn't reset the TH error handler
   lua_getglobal(L, "require");
   lua_pushstring(L, "torch");
   lua_call(L, 1, 1);
 
   // Note, leaving torch module on the stack, so we can return it
-
-  initWrappedExceptions(L);
-
   return 1;  // returning 1 value (torch module)
 }
