@@ -48,7 +48,7 @@ end
 if LuaUnit then
     -- modify torch.Tester and totem.Tester to use our own flavor of LuaUnit
 
-    torch.Tester.assert_sub = function(self, condition, message)
+    torch.Tester._assert_sub = function(self, condition, message)
         if not condition then
             error(message)
         end
@@ -78,8 +78,7 @@ if LuaUnit then
         -- global
         TestTorch = {}
 
-        for i,fun in ipairs(tests) do
-            local name = testnames[i]
+        for name,fun in pairs(tests) do
             TestTorch['test_' .. name] = fun
         end
 
@@ -88,9 +87,9 @@ if LuaUnit then
         LuaUnit:run()
     end
 
-    totem.Tester._assert_sub = torch.Tester.assert_sub
+    totem.Tester._assert_sub = torch.Tester._assert_sub
     totem.Tester._success = function() end
-    totem.Tester._failure = function() end
+    totem.Tester._failure = function(message) error(message) end
 
     totem.Tester.run = function(self, run_tests)
         local tests = self.tests
