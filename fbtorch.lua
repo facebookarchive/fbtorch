@@ -49,6 +49,7 @@ if LuaUnit then
     -- modify torch.Tester and totem.Tester to use our own flavor of LuaUnit
 
     torch.Tester._assert_sub = function(self, condition, message)
+        self._assertSubCalled = true
         if not condition then
             error(message)
         end
